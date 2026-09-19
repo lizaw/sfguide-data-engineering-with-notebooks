@@ -6,7 +6,6 @@
 #------------------------------------------------------------------------------
 
 from snowflake.snowpark import Session
-from snowflake.snowpark.context import get_active_session
 from snowflake.core import Root
 from snowflake.core.task.dagv1 import DAGOperation, DAG, DAGTask
 from datetime import timedelta
@@ -15,7 +14,21 @@ import sys
 database = sys.argv[1]  # DEMO_DB
 schema = sys.argv[2]    # DEV_SCHEMA
 
-session = get_active_session()
+try:
+    from snowflake.snowpark.context import get_active_session
+    session = get_active_session()
+except Exception:
+    # 在 CI/CD 环境中显式创建会话
+    from snowflake.snowpark import Session
+    import os
+    session = Session.builder.configs({
+        "account": os.environ["SNOWFLAKE_ACCOUNT"],
+        "user": os.environ["SNOWFLAKE_USER"],
+        "password": os.environ["SNOWFLAKE_PASSWORD"],
+        "role": os.environ.get("SNOWFLAKE_ROLE"),
+        "warehouse": os.environ.get("SNOWFLAKE_WAREHOUSE"),
+    }).create()
+
 session.sql(f"USE DATABASE {database}").collect()
 session.sql(f"USE SCHEMA {schema}").collect()
 
