@@ -6,41 +6,61 @@
 #------------------------------------------------------------------------------
 
 import os
-from snowflake.snowpark import Session
-
 import sys
-database = sys.argv[1]  # DEMO_DB
-schema = sys.argv[2]    # DEV_SCHEMA
+
+from snowflake.snowpark import Session
+from snowflake.snowpark.context import get_active_session
+
+database = sys.argv[1]
+schema = sys.argv[2]
+
+print("🔵 Before get_active_session()", flush=True)
 
 try:
-    # 1. Attempt to get the active session (works in Snowsight Notebooks)
-    from snowflake.snowpark.context import get_active_session
     session = get_active_session()
-    print("✅ Using active Snowsight session.")
-except Exception as e:
-    # 2. If no active session, create an explicit one (for CI/CD)
-    print(f"⚠️ No active session found ({e}). Creating explicit session for CI/CD...")
-    
-    # Check for required environment variables before attempting to connect
-    required_vars = ["SNOWFLAKE_ACCOUNT", "SNOWFLAKE_USER", "SNOWFLAKE_PASSWORD"]
+
+    print("🟢 get_active_session() returned", flush=True)
+    print(f"Session: {session}", flush=True)
+
+except BaseException as e:
+    print("🔴 EXCEPT WAS ENTERED", flush=True)
+    print(f"Exception type: {type(e).__name__}", flush=True)
+    print(f"Exception: {e}", flush=True)
+
+    required_vars = [
+        "SNOWFLAKE_ACCOUNT",
+        "SNOWFLAKE_USER",
+        "SNOWFLAKE_PASSWORD",
+    ]
+
     missing = [v for v in required_vars if not os.environ.get(v)]
+
     if missing:
-        raise ValueError(f"❌ Missing required environment variables for CI/CD session: {missing}")
-    
-    # Create the explicit session
+        raise ValueError(
+            f"❌ Missing required environment variables: {missing}"
+        )
+
     session = Session.builder.configs({
-        "account":   os.environ["SNOWFLAKE_ACCOUNT"],
-        "user":      os.environ["SNOWFLAKE_USER"],
-        "password":  os.environ["SNOWFLAKE_PASSWORD"],
-        "role":      os.environ.get("SNOWFLAKE_ROLE"),
+        "account": os.environ["SNOWFLAKE_ACCOUNT"],
+        "user": os.environ["SNOWFLAKE_USER"],
+        "password": os.environ["SNOWFLAKE_PASSWORD"],
+        "role": os.environ.get("SNOWFLAKE_ROLE"),
         "warehouse": os.environ.get("SNOWFLAKE_WAREHOUSE"),
-        "database":  os.environ.get("SNOWFLAKE_DATABASE"),
-        "schema":    os.environ.get("SNOWFLAKE_SCHEMA"),
+        "database": os.environ.get("SNOWFLAKE_DATABASE"),
+        "schema": os.environ.get("SNOWFLAKE_SCHEMA"),
     }).create()
-    print("✅ Explicit session created for CI/CD.")
+
+    print("✅ Explicit session created.", flush=True)
+
+print("🔵 Before USE DATABASE", flush=True)
 
 session.sql(f"USE DATABASE {database}").collect()
+
+print("🔵 Before USE SCHEMA", flush=True)
+
 session.sql(f"USE SCHEMA {schema}").collect()
+
+print("✅ Finished.", flush=True)
     
 def main(session: Session, database_name: str, schema_name: str, notebook_project_name: str, local_folder_path: str) -> str:
     """
