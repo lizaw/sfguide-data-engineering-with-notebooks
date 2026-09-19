@@ -10,6 +10,7 @@ import sys
 
 from snowflake.snowpark import Session
 from snowflake.snowpark.context import get_active_session
+from snowflake.snowpark.exceptions import SnowparkSessionException
 
 database = sys.argv[1]
 schema = sys.argv[2]
@@ -24,6 +25,8 @@ try:
 
 except BaseException as e:
     print("🔴 EXCEPT WAS ENTERED", flush=True)
+    session = None
+
     print(f"Exception type: {type(e).__name__}", flush=True)
     print(f"Exception: {e}", flush=True)
 
