@@ -7,6 +7,12 @@
 
 from snowflake.snowpark import Session
 
+from snowflake.snowpark.context import get_active_session
+session = get_active_session()
+
+# Set the execution context using the parameters you passed
+session.sql("USE DATABASE DEMO_DB").collect()
+session.sql("USE SCHEMA DEV_SCHEMA").collect()
 
 def main(session: Session, database_name: str, schema_name: str, notebook_project_name: str, local_folder_path: str) -> str:
     """
