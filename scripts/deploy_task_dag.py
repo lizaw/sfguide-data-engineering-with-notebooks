@@ -6,10 +6,18 @@
 #------------------------------------------------------------------------------
 
 from snowflake.snowpark import Session
+from snowflake.snowpark.context import get_active_session
 from snowflake.core import Root
 from snowflake.core.task.dagv1 import DAGOperation, DAG, DAGTask
 from datetime import timedelta
 
+import sys
+database = sys.argv[1]  # DEMO_DB
+schema = sys.argv[2]    # DEV_SCHEMA
+
+session = get_active_session()
+session.sql(f"USE DATABASE {database}").collect()
+session.sql(f"USE SCHEMA {schema}").collect()
 
 # Create the tasks using the DAG API
 def main(session: Session, database_name: str, schema_name: str, notebook_project_name: str) -> str:
