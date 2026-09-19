@@ -10,6 +10,7 @@ from snowflake.core import Root
 from snowflake.core.task.dagv1 import DAGOperation, DAG, DAGTask
 from datetime import timedelta
 
+import os
 import sys
 database = sys.argv[1]  # DEMO_DB
 schema = sys.argv[2]    # DEV_SCHEMA
