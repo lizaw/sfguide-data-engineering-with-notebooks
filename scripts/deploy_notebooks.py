@@ -40,15 +40,22 @@ except BaseException as e:
             f"❌ Missing required environment variables: {missing}"
         )
 
-    session = Session.builder.configs({
-        "account": os.environ["SNOWFLAKE_ACCOUNT"],
-        "user": os.environ["SNOWFLAKE_USER"],
-        "password": os.environ["SNOWFLAKE_PASSWORD"],
-        "role": os.environ.get("SNOWFLAKE_ROLE"),
-        "warehouse": os.environ.get("SNOWFLAKE_WAREHOUSE"),
-        "database": os.environ.get("SNOWFLAKE_DATABASE"),
-        "schema": os.environ.get("SNOWFLAKE_SCHEMA"),
-    }).create()
+    try:
+        session = Session.builder.configs({
+            "account":   os.environ["SNOWFLAKE_ACCOUNT"],
+            "user":      os.environ["SNOWFLAKE_USER"],
+            "password":  os.environ["SNOWFLAKE_PASSWORD"],
+            "role":      os.environ.get("SNOWFLAKE_ROLE"),
+            "warehouse": os.environ.get("SNOWFLAKE_WAREHOUSE"),
+            "database":  os.environ.get("SNOWFLAKE_DATABASE"),
+            "schema":    os.environ.get("SNOWFLAKE_SCHEMA"),
+        }).create()
+    except SnowparkSessionException as e:
+        print(f"Snowpark session error: {e}")
+        raise
+    except Exception as e:
+        print(f"Connection error: {type(e).__name__}: {e}")
+        raise
 
     print("✅ Explicit session created.", flush=True)
 
