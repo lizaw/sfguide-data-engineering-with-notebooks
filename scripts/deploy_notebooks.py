@@ -7,12 +7,27 @@
 
 from snowflake.snowpark import Session
 
-from snowflake.snowpark.context import get_active_session
-session = get_active_session()
+import sys
+database = sys.argv[1]  # DEMO_DB
+schema = sys.argv[2]    # DEV_SCHEMA
 
-# Set the execution context using the parameters you passed
-session.sql("USE DATABASE DEMO_DB").collect()
-session.sql("USE SCHEMA DEV_SCHEMA").collect()
+try:
+    from snowflake.snowpark.context import get_active_session
+    session = get_active_session()
+except Exception:
+    # 在 CI/CD 环境中显式创建会话
+    from snowflake.snowpark import Session
+    import os
+    session = Session.builder.configs({
+        "account": os.environ["SNOWFLAKE_ACCOUNT"],
+        "user": os.environ["SNOWFLAKE_USER"],
+        "password": os.environ["SNOWFLAKE_PASSWORD"],
+        "role": os.environ.get("SNOWFLAKE_ROLE"),
+        "warehouse": os.environ.get("SNOWFLAKE_WAREHOUSE"),
+    }).create()
+
+session.sql(f"USE DATABASE {database}").collect()
+session.sql(f"USE SCHEMA {schema}").collect()
 
 def main(session: Session, database_name: str, schema_name: str, notebook_project_name: str, local_folder_path: str) -> str:
     """
